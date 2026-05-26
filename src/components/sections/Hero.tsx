@@ -1,34 +1,101 @@
 "use client"
 
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion"
 import { ChevronDown, ArrowRight, Github, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MagneticButton } from "@/components/MagneticButton"
 import { personalInfo } from "@/lib/data"
 
+const LETTER_OFFSETS = [
+  { x: -28, y: -18, rotate: -4 },
+  { x: 22, y: 14, rotate: 3 },
+  { x: -16, y: -22, rotate: -5 },
+  { x: 34, y: -8, rotate: 5 },
+  { x: -24, y: 18, rotate: -3 },
+  { x: 12, y: -14, rotate: 2 },
+  { x: -32, y: 9, rotate: -5 },
+  { x: 20, y: -16, rotate: 4 },
+  { x: -8, y: 26, rotate: -2 },
+  { x: 14, y: -20, rotate: 3 },
+  { x: -18, y: 11, rotate: -4 },
+  { x: 28, y: -6, rotate: 5 },
+  { x: -10, y: 24, rotate: -2 },
+  { x: 18, y: -10, rotate: 4 },
+  { x: -26, y: 16, rotate: -5 },
+  { x: 30, y: -4, rotate: 3 },
+  { x: -14, y: 20, rotate: -4 },
+  { x: 6, y: -26, rotate: 2 },
+  { x: -30, y: 7, rotate: -3 },
+  { x: 24, y: -12, rotate: 5 },
+  { x: -4, y: 22, rotate: -3 },
+  { x: 16, y: -18, rotate: 2 },
+]
+
+function AnimatedLetter({
+  char,
+  index,
+  progress,
+}: {
+  char: string
+  index: number
+  progress: MotionValue<number>
+}) {
+  const offset = LETTER_OFFSETS[index % LETTER_OFFSETS.length]
+
+  const x = useTransform(progress, [0, 1], [0, offset.x])
+  const y = useTransform(progress, [0, 1], [0, offset.y])
+  const rotate = useTransform(progress, [0, 1], [0, offset.rotate])
+  const opacity = useTransform(progress, [0, 1], [1, 0])
+  const filter = useTransform(progress, [0, 1], ["blur(0px)", "blur(20px)"])
+
+  return (
+    <motion.span
+      className="text-gradient"
+      style={{ display: "inline-block", x, y, rotate, opacity, filter }}
+    >
+      {char === " " ? "\u00A0" : char}
+    </motion.span>
+  )
+}
+
+function AnimatedText({
+  text,
+  progress,
+}: {
+  text: string
+  progress: MotionValue<number>
+}) {
+  return (
+    <>
+      {text.split("").map((char, i) => (
+        <AnimatedLetter key={`${i}`} char={char} index={i} progress={progress} />
+      ))}
+    </>
+  )
+}
+
 export function Hero() {
   const { scrollYProgress } = useScroll()
 
-  const nameOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0])
-  const nameBlur = useTransform(scrollYProgress, [0, 0.35], ["0px", "8px"])
-  const nameY = useTransform(scrollYProgress, [0, 0.35], [0, -80])
+  const nameProgress = useTransform(scrollYProgress, [0, 0.35], [0, 1])
+  const subtitleProgress = useTransform(scrollYProgress, [0.08, 0.42], [0, 1])
 
-  const subtitleOpacity = useTransform(scrollYProgress, [0.15, 0.45], [0, 1])
-  const subtitleBlur = useTransform(scrollYProgress, [0.15, 0.45], ["6px", "0px"])
-  const subtitleY = useTransform(scrollYProgress, [0.15, 0.45], [20, 0])
+  const taglineOpacity = useTransform(scrollYProgress, [0.15, 0.5], [1, 0])
+  const taglineBlur = useTransform(scrollYProgress, [0.15, 0.5], ["blur(0px)", "blur(10px)"])
+  const taglineY = useTransform(scrollYProgress, [0.15, 0.5], [0, -15])
 
-  const actionsOpacity = useTransform(scrollYProgress, [0.3, 0.55], [0, 1])
-  const actionsY = useTransform(scrollYProgress, [0.3, 0.55], [30, 0])
+  const actionsOpacity = useTransform(scrollYProgress, [0.25, 0.55], [1, 0])
+  const actionsY = useTransform(scrollYProgress, [0.25, 0.55], [0, -20])
 
-  const socialOpacity = useTransform(scrollYProgress, [0.4, 0.6], [0, 1])
+  const socialOpacity = useTransform(scrollYProgress, [0.35, 0.6], [1, 0])
 
-  const glowOpacity = useTransform(scrollYProgress, [0, 0.5], [0.15, 0])
-  const arrowOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.4], [0.15, 0])
+  const arrowOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0])
 
   return (
     <section
       id="hero"
-      className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden"
+      className="relative h-screen sticky top-0 flex flex-col items-center justify-center px-6 overflow-hidden"
     >
       <motion.div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -43,30 +110,23 @@ export function Hero() {
         />
       </motion.div>
 
-      <motion.div
-        className="relative z-10 text-center max-w-6xl mx-auto flex flex-col items-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.01 }}
-      >
-        <motion.h1
-          className="text-[clamp(3.5rem,10vw,9rem)] font-bold tracking-[-0.04em] leading-[0.85] mb-4"
-          style={{ opacity: nameOpacity, filter: `blur(${nameBlur})`, y: nameY }}
-        >
-          <span className="text-gradient">{personalInfo.name}</span>
-        </motion.h1>
+      <div className="relative z-10 text-center max-w-6xl mx-auto flex flex-col items-center">
+        <h1 className="text-[clamp(3.5rem,10vw,9rem)] font-bold tracking-[-0.04em] leading-[0.85] mb-4 uppercase">
+          <span className="inline-flex flex-wrap justify-center">
+            <AnimatedText text={personalInfo.name} progress={nameProgress} />
+          </span>
+        </h1>
 
-        <motion.div
-          className="flex flex-col items-center gap-2"
-          style={{ opacity: subtitleOpacity, filter: `blur(${subtitleBlur})`, y: subtitleY }}
+        <div className="text-lg sm:text-xl md:text-2xl font-light tracking-wide flex flex-wrap justify-center">
+          <AnimatedText text={personalInfo.title} progress={subtitleProgress} />
+        </div>
+
+        <motion.p
+          className="text-sm sm:text-base text-muted-foreground/60 max-w-xl leading-relaxed mt-2"
+          style={{ opacity: taglineOpacity, filter: taglineBlur, y: taglineY }}
         >
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-light tracking-wide">
-            {personalInfo.title}
-          </p>
-          <p className="text-sm sm:text-base text-muted-foreground/60 max-w-xl leading-relaxed">
-            {personalInfo.tagline}
-          </p>
-        </motion.div>
+          {personalInfo.tagline}
+        </motion.p>
 
         <motion.div
           className="flex flex-wrap items-center justify-center gap-4 mt-10"
@@ -93,7 +153,7 @@ export function Hero() {
         >
           <MagneticButton>
             <a
-              href="https://github.com"
+              href={personalInfo.github}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-white transition-colors block p-2"
@@ -103,7 +163,7 @@ export function Hero() {
           </MagneticButton>
           <MagneticButton>
             <a
-              href="https://linkedin.com"
+              href={personalInfo.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-white transition-colors block p-2"
@@ -112,7 +172,7 @@ export function Hero() {
             </a>
           </MagneticButton>
         </motion.div>
-      </motion.div>
+      </div>
 
       <motion.div
         className="absolute bottom-10 left-1/2 -translate-x-1/2"

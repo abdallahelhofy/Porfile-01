@@ -1,6 +1,6 @@
 export const personalInfo = {
   name: "Abdallah ElHoFy",
-  title: "Backend Engineer",
+  title: "Backend Engineer | ERP Specialist",
   tagline: "Building scalable systems, ERP solutions, and modern backend architectures.",
   description: "Backend engineer specializing in enterprise resource planning systems, API architecture, and infrastructure automation. Focused on building reliable, scalable systems that power business operations.",
   email: "ahmed@example.com",
